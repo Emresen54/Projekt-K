@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Produkt Erstellen</title>
+  <!-- Bootstrap CSS-Datei einbinden -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100">
+  <div class="container d-flex flex-column justify-content-center align-items-center flex-grow-1"><!--mit bootstrap website gemacht-->
+    <!-- Zurück-Button -->
+    <div class="position-absolute" style="left: 20px; top: 20px;">
+      <button class="btn btn-dark" onclick="window.location.href='PAuflisten.html'">
+        <span>&#x2039;</span>
+      </button>
+    </div>
+    <!-- Titel des Formulars -->
+    <div class="text-center mb-4">
+      <h1 class="display-4 font-weight-bold">Produkt Erstellen</h1>
+    </div>
+    <!-- Kategorie-Button -->
+    <div class="position-absolute" style="right: 20px; top: 20px;">
+      <button type="button" class="btn btn-dark" onclick="window.location.href='KErstellen.html'">Kategorie</button>
+    </div>
+    <div class="row w-100">
+      <!-- Eingabefelder und Erstellen-Button -->
+      <div class="col-md-6 mb-4">
+        <form id="createProductForm" enctype="multipart/form-data">
+          <div class="form-group">
+            <input type="text" id="productName" name="name" class="form-control form-control-lg mb-3" placeholder="Produktname">
+            <input type="text" id="productPrice" name="price" class="form-control form-control-lg mb-3" placeholder="Preis">
+            <select id="productCategory" name="categoryId" class="form-control form-control-lg mb-3">
+            </select>
+            <input type="file" id="image" name="image" class="w-full p-2 border rounded">
+            <button type="submit" class="btn btn-secondary btn-lg btn-block">Erstellen</button>
+          </div>
+        </form>
+      </div>
+      <!-- Platzhalter für das Bild -->
+      <div class="col-md-6 mb-4">
+        <div class="d-flex justify-content-center align-items-center bg-light" style="height: 100%; font-size: 1.5rem;">
+          Bild hochladen
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- JavaScript-Bibliotheken einbinden -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    // Beim Laden der Seite Kategorien laden
+    document.addEventListener('DOMContentLoaded', async function() {
+      await loadCategories();
+    });
+
+    // Kategorien von der API laden und in das Dropdown-Menü einfügen
+    async function loadCategories() {
+      try {
+        const response = await fetch('http://localhost:3000/categories');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const categories = await response.json();
+        const categorySelect = document.getElementById('productCategory');
+
+        categories.forEach(category => {
+          const option = document.createElement('option');
+          option.value = category.id;
+          option.textContent = category.name;
+          categorySelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      }
+    }
+
+    document.getElementById('createProductForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const form = document.getElementById('createProductForm');
+      const formData = new FormData(form);
+
+      const response = await fetch('http://localhost:3000/products', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        alert('Produkt erstellt');
+        window.location.href = 'PAuflisten.html';
+      } else {
+        alert('Fehler beim Erstellen des Produkts');
+      }
+    });
+  </script>
+</body>
+</html>

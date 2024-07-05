@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kategorie Auflisten</title>
+  <!-- Bootstrap CSS-Datei einbinden -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+  <div class="container d-flex flex-column justify-content-center align-items-center flex-grow-1">
+    <!-- "Neu Erstellen"-Button -->
+    <div class="position-absolute" style="left: 20px; top: 20px;">
+      <button type="button" class="btn btn-dark" onclick="window.location.href='KErstellen.html'">Neu Erstellen</button>
+    </div>
+    <!-- "Produkt"-Button -->
+    <button type="button" class="btn btn-dark position-absolute" style="top: 20px; right: 20px;" onclick="window.location.href='PAuflisten.html'">Produkt</button>
+    <!-- Seitenüberschrift -->
+    <div class="text-center mb-4">
+      <h1 class="display-3 font-weight-bold">Kategorie Auflisten</h1>
+    </div>
+    <!-- Tabelle zur Anzeige der Kategorien -->
+    <div class="table-responsive w-100">
+      <table class="table table-bordered text-center">
+        <thead>
+          <tr>
+            <th scope="col">Kategorie</th>
+            <th scope="col">Aktion</th>
+            <th scope="col">Aktion</th>
+          </tr>
+        </thead>
+        <tbody id="categoryTableBody">
+          <!-- Kategorien werden hier dynamisch eingefügt -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- JavaScript-Bibliotheken einbinden -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    // Beim Laden der Seite Kategorien laden
+    document.addEventListener('DOMContentLoaded', async function() {
+      await loadCategories();
+    });
+
+    // Kategorien von der API laden und in die Tabelle einfügen
+    async function loadCategories() {
+      try {
+        const response = await fetch('http://localhost:3000/categories');
+        if (!response.ok) {
+          throw new Error(`HTTP-Fehler! Status: ${response.status}`);
+        }
+
+        const categories = await response.json();
+        const tableBody = document.getElementById('categoryTableBody');
+        tableBody.innerHTML = '';
+
+        // Für jede Kategorie eine Zeile in der Tabelle erstellen
+        categories.forEach(category => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${category.name}</td>
+            <td><button type="button" class="btn btn-dark" onclick="editCategory(${category.id})">Bearbeiten</button></td>
+            <td><button type="button" class="btn btn-danger" onclick="deleteCategory(${category.id})">Löschen</button></td>
+          `;
+          tableBody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Fehler beim Laden der Kategorien:', error);
+      }
+    }
+
+    // Kategorie löschen
+    async function deleteCategory(id) {
+      try {
+        const response = await fetch(`http://localhost:3000/categories/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP-Fehler! Status: ${response.status}`);
+        }
+
+        await loadCategories(); // Nach dem Löschen die Kategorien neu laden
+      } catch (error) {
+        console.error('Fehler beim Löschen der Kategorie:', error);
+      }
+    }
+
+    // Kategorie bearbeiten
+    function editCategory(id) {
+      window.location.href = `KBearbeiten.html?id=${id}`; // Zur Bearbeitungsseite weiterleiten
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anmeldung</title>
+  <!-- Bootstrap CSS-Datei einbinden -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="d-flex justify-content-center align-items-center vh-100 bg-light"><!--mit bootstrap website gemacht-->
+  <!-- Anmeldeformular im Kartenstil -->
+  <div class="card p-4 shadow-lg" style="max-width: 400px; width: 100%;"><!--mit bootstrap website gemacht-->
+    <h1 class="mb-5 text-center">Anmeldung</h1>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="username">Benutzername</label>
+        <!-- Eingabefeld für den Benutzernamen -->
+        <input type="text" class="form-control" id="username" placeholder="z.B. Emre" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Passwort</label>
+        <!-- Eingabefeld für das Passwort -->
+        <input type="password" class="form-control" id="password" placeholder="Mindesten 6 zeichen" required>
+      </div>
+      <!-- Anmelden-Button -->
+      <button type="submit" class="btn btn-primary btn-block">Anmelden</button>
+    </form>
+    <!-- Registrierungslink -->
+    <p class="mt-3 text-center" id="registerButton">Haben Sie kein Konto? <a href="#">Registrieren</a></p>
+  </div>
+
+  <script>
+    // Event-Listener für den Registrierungslink
+    document.getElementById('registerButton').addEventListener('click', function() {
+      window.location.href = 'Registrierung.html';
+    });
+
+    // Event-Listener für das Anmeldeformular
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Standard-Formularaktion verhindern
+
+      // Werte aus den Eingabefeldern holen
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      const data = { username, password };
+
+      // API-Aufruf zur Anmeldung
+      fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data) // Daten als JSON senden
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Invalid credentials'); // Fehlerüberprüfung
+        }
+        return response.json(); // JSON-Antwort verarbeiten
+      })
+      .then(result => {
+        const token = result.token;
+        const payload = JSON.parse(atob(token.split('.')[1]));
+
+        // Token im localStorage speichern
+        localStorage.setItem('token', token);
+
+        // Weiterleitung basierend auf der Rolle des Benutzers
+        if (payload.role === 'admin') {
+          window.location.href = 'PAuflisten.html';
+        } else {
+          window.location.href = 'index.html';
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Fehler beim Einloggen: ' + error.message); // Fehlermeldung anzeigen
+      });
+    });
+  </script>
+  <!-- Notwendige JavaScript-Dateien einbinden -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

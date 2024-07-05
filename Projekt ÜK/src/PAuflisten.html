@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Produkt Auflisten</title>
+  <!-- Bootstrap CSS-Datei einbinden -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+  <div class="container d-flex flex-column justify-content-center align-items-center flex-grow-1"><!--mit bootstrap website gemacht-->
+    <!-- "Neu Erstellen"-Button -->
+    <div class="position-absolute" style="left: 20px; top: 20px;">
+      <button type="button" class="btn btn-dark" onclick="window.location.href='produkterstellen.html'">Neu Erstellen</button>
+    </div>
+    <!-- "Kategorie"-Button -->
+    <button type="button" class="btn btn-dark position-absolute" style="top: 20px; right: 20px;" onclick="window.location.href='KAuflisten.html'">Kategorie</button>
+    <!-- Seitenüberschrift -->
+    <div class="text-center mb-4">
+      <h1 class="display-3 font-weight-bold" onclick="window.location.href='index.html'">Produkt Auflisten</h1>
+    </div>
+    <!-- Tabelle zur Anzeige der Produkte -->
+    <div class="table-responsive w-100">
+      <table class="table table-bordered text-center">
+        <thead>
+          <tr>
+            <th scope="col">Produkt</th>
+            <th scope="col">Preis</th>
+            <th scope="col">Kategorie</th>
+            <th scope="col">Aktion</th>
+            <th scope="col">Aktion</th>
+          </tr>
+        </thead>
+        <tbody id="productTableBody">
+          <!-- Produktzeilen werden hier dynamisch eingefügt -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- JavaScript-Bibliotheken einbinden -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    // Beim Laden der Seite Produkte laden
+    document.addEventListener('DOMContentLoaded', async function() {
+      await loadProducts();
+    });
+
+    // Produkte von der API laden und in die Tabelle einfügen
+    async function loadProducts() {
+      try {
+        const response = await fetch('http://localhost:3000/products');
+        if (!response.ok) {
+          throw new Error(`HTTP-Fehler! Status: ${response.status}`);
+        }
+
+        const products = await response.json();
+        const tableBody = document.getElementById('productTableBody');
+        tableBody.innerHTML = '';
+
+        // Für jedes Produkt eine Zeile in der Tabelle erstellen
+        products.forEach(product => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${product.name}</td>
+            <td>${product.price}</td>
+            <td>${product.categoryName}</td>
+            <td><button type="button" class="btn btn-dark" onclick="editProduct(${product.id})">Bearbeiten</button></td>
+            <td><button type="button" class="btn btn-danger" onclick="deleteProduct(${product.id})">Löschen</button></td>
+          `;
+          tableBody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Fehler beim Laden der Produkte:', error);
+      }
+    }
+
+    // Produkt löschen
+    async function deleteProduct(id) {
+      try {
+        const response = await fetch(`http://localhost:3000/products/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP-Fehler! Status: ${response.status}`);
+        }
+
+        await loadProducts(); // Nach dem Löschen die Produkte neu laden
+      } catch (error) {
+        console.error('Fehler beim Löschen des Produkts:', error);
+      }
+    }
+
+    // Produkt bearbeiten
+    function editProduct(id) {
+      window.location.href = `PBearbeiten.html?id=${id}`; // Zur Bearbeitungsseite weiterleiten
+    }
+
+    // Seite neu laden, wenn der Benutzer zurück navigiert
+    window.onpageshow = function(event) {
+      if (event.persisted || (window.performance && window.performance.navigation.type == 2)) {
+        window.location.reload();
+      }
+    };
+  </script>
+</body>
+</html>
